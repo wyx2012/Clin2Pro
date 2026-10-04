@@ -1,0 +1,64 @@
+seed: 2026
+device: auto
+num_workers: 0
+output_dir: outputs/full
+
+data:
+  # Data are supplied separately under data/.
+  # The loader also checks its parent directory for the five data folders.
+  root: "./data"
+  id_column: "Participant ID"
+  stage1_imputation: "LabTOP"
+  stage2_imputations: ["LabTOP", "MICE", "SVD", "MedianMode"]
+  stage3_imputations: ["LabTOP", "MICE", "SVD", "MedianMode"]
+  exclude_longitudinal_participants_from_stage1: true
+  max_stage1_rows: null
+  max_stage2_pairs_per_imputation: null
+
+model:
+  clinical_hidden: 256
+  clinical_layers: 4
+  clinical_heads: 8
+  clinical_dropout: 0.15
+  temporal_hidden: 384
+  temporal_dropout: 0.20
+  bridge_rank: 32
+
+stage1:
+  epochs: 100
+  batch_size: 256
+  learning_rate: 0.0003
+  weight_decay: 0.0001
+  val_fraction: 0.10
+  patience: 12
+  loss: huber
+
+stage2:
+  epochs: 100
+  batch_size: 128
+  learning_rate: 0.0003
+  encoder_learning_rate: 0.00005
+  weight_decay: 0.0001
+  val_fraction: 0.15
+  patience: 12
+  lambda_affinity: 1.0
+  lambda_binary: 0.5
+  lambda_pathway: 0.3
+
+stage3:
+  folds: 5
+  validation_fraction: 0.15
+  epochs: 300
+  batch_size: 32
+  learning_rate: 0.0003
+  encoder_learning_rate: 0.00003
+  weight_decay: 0.0002
+  patience: 35
+  freeze_clinical_epochs: 10
+  lambda_protein: 1.0
+  lambda_pathway: 0.3
+  lambda_bridge: 0.2
+  lambda_regularization: 0.0001
+  bridge_l1: 0.0
+  top_k_drugs: 20
+  train_final_model: true
